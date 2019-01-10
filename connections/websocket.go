@@ -62,6 +62,7 @@ func (ws *WebsocketServer) Stop(timeout time.Duration) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	ws.server.Shutdown(ctx)
+	close(ws.Connections)
 }
 
 func (ws *WebsocketServer) UpgradeToWebsocket() http.HandlerFunc {
