@@ -7,7 +7,7 @@ import (
 	"github.com/mattes/migrate"
 	_ "github.com/mattes/migrate/database/postgres"
 	bindata "github.com/mattes/migrate/source/go-bindata"
-	"github.com/soupstore/go-core/logging"
+	"github.com/soupstoregames/go-core/logging"
 )
 
 // MakeBinDataMigration creates a migration source from files packed into the binary with go-bindata

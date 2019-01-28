@@ -8,10 +8,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/soupstore/go-core/logging"
+	"github.com/soupstoregames/go-core/logging"
 )
 
-var upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(*http.Request) bool {
+		return true
+	},
+}
 
 var (
 	ErrConnectionClosedAbnormally = errors.New("connection closed abnormally")

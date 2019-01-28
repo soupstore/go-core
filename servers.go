@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/soupstore/go-core/logging"
+	"github.com/soupstoregames/go-core/logging"
 )
 
 // GracefulShutdownOnSignal will run the supplied shutdown procedure when one of the specified signals is received
