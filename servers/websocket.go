@@ -1,4 +1,4 @@
-package connections
+package servers
 
 import (
 	"context"
@@ -26,9 +26,10 @@ type WebsocketServer struct {
 
 	server     *http.Server
 	disposeLog func()
+	addr       string
 }
 
-func NewWebsocketServer(addr string, handler http.HandlerFunc) *WebsocketServer {
+func NewWebsocketServer(addr string) *WebsocketServer {
 	logger, _ := logging.WarnLogger()
 	server := &http.Server{
 		Addr:         addr,
@@ -42,6 +43,7 @@ func NewWebsocketServer(addr string, handler http.HandlerFunc) *WebsocketServer 
 	w := &WebsocketServer{
 		Connections: make(chan *WebsocketConnection),
 		server:      server,
+		addr:        addr,
 	}
 	w.server.Handler = w.UpgradeToWebsocket()
 
@@ -49,7 +51,7 @@ func NewWebsocketServer(addr string, handler http.HandlerFunc) *WebsocketServer 
 }
 
 func (ws *WebsocketServer) Start() {
-	logging.Info("HTTPS Server OK")
+	logging.Info("Websocket server listening on " + ws.addr)
 	go func() {
 		err := ws.server.ListenAndServe()
 		if err != nil {
@@ -63,9 +65,12 @@ func (ws *WebsocketServer) Start() {
 }
 
 func (ws *WebsocketServer) Stop(timeout time.Duration) {
+	logging.Info("Stopping Websocket server")
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-	ws.server.Shutdown(ctx)
+	if err := ws.server.Shutdown(ctx); err != nil {
+		logging.Error(err.Error())
+	}
 	close(ws.Connections)
 }
 
@@ -84,6 +89,8 @@ func (ws *WebsocketServer) UpgradeToWebsocket() http.HandlerFunc {
 
 type WebsocketConnection struct {
 	*logging.ConnectionLogger
+
+	Closed bool
 
 	conn *websocket.Conn
 	id   string
@@ -105,12 +112,17 @@ func (c *WebsocketConnection) ID() string {
 }
 
 func (c *WebsocketConnection) Close() error {
+	if c.Closed {
+		return nil
+	}
+
 	c.Info("Closing connection")
+	c.Closed = true
 	return c.conn.Close()
 }
 
 func (c *WebsocketConnection) WriteMessage(p []byte) (err error) {
-	return c.conn.WriteMessage(websocket.TextMessage, p)
+	return c.conn.WriteMessage(websocket.BinaryMessage, p)
 }
 
 func (c *WebsocketConnection) ReadMessage() (msg []byte, err error) {
