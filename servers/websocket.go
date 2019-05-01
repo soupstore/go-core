@@ -92,8 +92,9 @@ type WebsocketConnection struct {
 
 	Closed bool
 
-	conn *websocket.Conn
-	id   string
+	conn           *websocket.Conn
+	id             string
+	closeFunctions []func()
 }
 
 func NewWebsocketConnection(c *websocket.Conn) *WebsocketConnection {
@@ -118,7 +119,14 @@ func (c *WebsocketConnection) Close() error {
 
 	c.Info("Closing connection")
 	c.Closed = true
+	for _, f := range c.closeFunctions {
+		f()
+	}
 	return c.conn.Close()
+}
+
+func (c *WebsocketConnection) OnClose(f func()) {
+	c.closeFunctions = append(c.closeFunctions, f)
 }
 
 func (c *WebsocketConnection) WriteMessage(p []byte) (err error) {

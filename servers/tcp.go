@@ -47,7 +47,7 @@ func (t *TCPServer) Start() error {
 				logging.Error(err.Error())
 			}
 
-			logging.Info("Client connected: " + conn.RemoteAddr().String())
+			logging.Debug("Client connected: " + conn.RemoteAddr().String())
 
 			// Handle connections in a new goroutine.
 			go func() {
@@ -57,7 +57,7 @@ func (t *TCPServer) Start() error {
 					n, err := conn.Read(buffer)
 					if err != nil {
 						if err == io.EOF {
-							logging.Info("Client disconnected: " + conn.RemoteAddr().String())
+							logging.Debug("Client disconnected: " + conn.RemoteAddr().String())
 							return
 						}
 						logging.Error(err.Error())
