@@ -20,11 +20,16 @@ func NewConsulServiceCatalog() (*ConsulServiceCatalog, error) {
 	return &ConsulServiceCatalog{catalog}, nil
 }
 
-func (c *ConsulServiceCatalog) Service(service string) (string, error) {
+func (c *ConsulServiceCatalog) Service(service string) ([]string, error) {
 	services, _, err := c.catalog.Service(service, "", nil)
 	if err != nil {
-		return "", err
+		return []string{}, err
 	}
 
-	return fmt.Sprintf("%s:%d", services[0].ServiceAddress, services[0].ServicePort), nil
+	addresses := make([]string, len(services))
+	for i := range services {
+		addresses[i] = fmt.Sprintf("%s:%d", services[i].ServiceAddress, services[i].ServicePort)
+	}
+
+	return addresses, nil
 }
