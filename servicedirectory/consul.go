@@ -1,8 +1,10 @@
 package servicedirectory
 
 import (
+	"context"
 	"fmt"
 	consul "github.com/hashicorp/consul/api"
+	"github.com/soupstoregames/go-core/logging"
 )
 
 type ConsulServiceCatalog struct {
@@ -20,16 +22,28 @@ func NewConsulServiceCatalog() (*ConsulServiceCatalog, error) {
 	return &ConsulServiceCatalog{catalog}, nil
 }
 
-func (c *ConsulServiceCatalog) Service(service string) ([]string, error) {
-	services, _, err := c.catalog.Service(service, "", nil)
-	if err != nil {
-		return []string{}, err
-	}
+func (c *ConsulServiceCatalog) Service(ctx context.Context, service string, tag string) ([]string, error) {
+	for {
+		services, _, err := c.catalog.Service(service, tag, nil)
+		if err != nil {
+			logging.Error(err.Error())
+		}
 
-	addresses := make([]string, len(services))
-	for i := range services {
-		addresses[i] = fmt.Sprintf("%s:%d", services[i].ServiceAddress, services[i].ServicePort)
-	}
+		select {
+		case <-ctx.Done():
+			logging.Error(fmt.Sprintf("Consul: Finding service '%s' tagged '%s': %v", service, tag, ctx.Err()))
+			return []string{}, ctx.Err()
+		default:
+			if len(services) == 0 {
+				continue
+			}
 
-	return addresses, nil
+			addresses := make([]string, len(services))
+			for i := range services {
+				addresses[i] = fmt.Sprintf("%s:%d", services[i].ServiceAddress, services[i].ServicePort)
+			}
+
+			return addresses, nil
+		}
+	}
 }
