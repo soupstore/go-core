@@ -1,6 +1,9 @@
 package maths
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 // Point is a position inside a chunk or the position of a chunk itself.
 type Point struct {
@@ -29,4 +32,8 @@ func (c Point) Abs() Point {
 
 func (c Point) Euclidean() float64 {
 	return math.Sqrt(math.Pow(float64(c.X), 2) + math.Pow(float64(c.Y), 2))
+}
+
+func (c Point) String() string {
+	return fmt.Sprintf("%d-%d", c.X, c.Y)
 }
