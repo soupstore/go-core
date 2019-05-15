@@ -2,6 +2,13 @@ package logging
 
 import "github.com/sirupsen/logrus"
 
+type Logger interface {
+	Info(msg string)
+	Warn(msg string)
+	Error(msg string)
+	Fatal(msg string)
+}
+
 type ConnectionLogger struct {
 	entry *logrus.Entry
 }

@@ -81,9 +81,7 @@ func Warn(msg string) {
 
 // Error logs an error level message with standard fields
 func Error(msg string) {
-	logger.ReportCaller = true
 	logger.Error(msg)
-	logger.ReportCaller = false
 }
 
 // Fatal logs an fatal level message with standard fields
